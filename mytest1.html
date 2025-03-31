@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager 📋</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background: #f4f4f4; 
+            margin: 0; 
+            padding: 20px; 
+            transition: background 0.3s, color 0.3s; 
+        }
+        .container { 
+            max-width: 500px; 
+            margin: auto; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+            transition: background 0.3s, color 0.3s; 
+        }
+        input, button { 
+            width: 100%; 
+            margin: 8px 0; 
+            padding: 12px; 
+            font-size: 16px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
+        button:hover { 
+            background: #0056b3; 
+        }
+        .task { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px; 
+            background: #f8f9fa; 
+            margin: 5px 0; 
+            border-radius: 5px; 
+            border-left: 5px solid #007bff; 
+        }
+        .completed { 
+            text-decoration: line-through; 
+            opacity: 0.6; 
+        }
+        .dark-mode { 
+            background: #333; 
+            color: white; 
+        }
+        .dark-mode .container { 
+            background: #444; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.1); 
+        }
+        .dark-mode button { 
+            background: #555; 
+            color: white; 
+        }
+        .dark-mode .task { 
+            background: #555; 
+            border-left: 5px solid #007bff; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Task Manager 🚀</h2>
+        <p>Stay organized and keep your productivity on track! (Or at least try... 😄)</p>
+        <input type="text" id="taskInput" placeholder="Enter a task...">
+        <button onclick="addTask()">Add Task ✅</button>
+        <button onclick="clearTasks()" style="background: #ff5733;">Clear All 🗑️</button>
+        <button onclick="toggleDarkMode()" id="darkModeBtn" style="background: #333;">Dark Mode 🌙</button>
+        <button onclick="showCompletedTasks()" style="background: #28a745;">Show Completed ✅</button>
+        <ul id="taskList"></ul>
+    </div>
+    <script>
+        function getTasks() {
+            return JSON.parse(localStorage.getItem("tasks")) || [];
+        }
+        function saveTasks(tasks) {
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+        function renderTasks(filterCompleted = false) {
+            const taskList = document.getElementById("taskList");
+            taskList.innerHTML = "";
+            getTasks().forEach((task, index) => {
+                if (filterCompleted && !task.completed) return;
+                let li = document.createElement("li");
+                li.className = `task ${task.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <span contenteditable="true" onblur="editTask(${index}, this.innerText)">${task.text}</span>
+                    <div>
+                        <button onclick="completeTask(${index})">✔ Done</button>
+                        <button onclick="deleteTask(${index})" style="background: #dc3545;">❌ Remove</button>
+                    </div>`;
+                taskList.appendChild(li);
+            });
+        }
+        function addTask() {
+            let taskText = document.getElementById("taskInput").value.trim();
+            if (!taskText) return alert("Oops! You forgot to enter a task. 🤔");
+            let tasks = getTasks();
+            tasks.push({ text: taskText, completed: false });
+            saveTasks(tasks);
+            document.getElementById("taskInput").value = "";
+            renderTasks();
+        }
+        function completeTask(index) {
+            let tasks = getTasks();
+            tasks[index].completed = !tasks[index].completed;
+            saveTasks(tasks);
+            alert("Great job! 🎉 You completed a task! Keep up the good work!");
+            renderTasks();
+        }
+        function deleteTask(index) {
+            let tasks = getTasks();
+            tasks.splice(index, 1);
+            saveTasks(tasks);
+            alert("Task removed! 🗑️ Hope it wasn't important...");
+            renderTasks();
+        }
+        function clearTasks() {
+            if (confirm("Are you sure you want to clear all tasks? This action cannot be undone!")) {
+                localStorage.removeItem("tasks");
+                renderTasks();
+            }
+        }
+        function editTask(index, newText) {
+            let tasks = getTasks();
+            tasks[index].text = newText;
+            saveTasks(tasks);
+        }
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            let isDarkMode = document.body.classList.contains("dark-mode");
+            document.getElementById("darkModeBtn").innerText = isDarkMode ? "Light Mode ☀" : "Dark Mode 🌙";
+            alert(isDarkMode ? "Welcome to the dark side! 🌑" : "Back to the bright side! ☀");
+        }
+        function showCompletedTasks() {
+            renderTasks(true);
+        }
+        renderTasks();
+    </script>
+</body>
+</html>
